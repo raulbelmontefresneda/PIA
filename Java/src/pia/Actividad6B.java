@@ -9,26 +9,19 @@ import java.util.List;
 
 /**
  * Actividad 6B: Filtrado de Casos con Hilos Virtuales (Java 21+)
- * Objetivo: Reemplazar los hilos nativos del sistema operativo por Virtual Threads (Project Loom)
- * para lograr concurrencia ultraligera administrada directamente por la JVM.
+ * Ejecutable directo sin argumentos de consola.
  */
 public class Actividad6B {
 
     public static void main(String[] args) {
-        if (args.length < 4) {
-            System.out.println("Error: Argumentos insuficientes.");
-            System.out.println("Uso: java pia.Actividad6B <archivo_origen> <indice_columna> <valor_buscado> <num_hilos_virtuales>");
-            System.exit(1);
-        }
-
-        String origen = args[0];
-        int indiceColumna = Integer.parseInt(args[1]);
-        String valorBuscado = args[2];
-        int numHilos = Integer.parseInt(args[3]);
+        // Configuración de parámetros locales
+        String origen = "diabetes.arff";
+        int indiceColumna = 8;
+        String valorBuscado = "tested_positive";
+        int numHilosVirtuales = 50;            // Se pueden invocar decenas o cientos sin impacto de RAM
 
         List<String> filasData = new ArrayList<>();
 
-        // 1. Cargar la sección @data en memoria
         try (BufferedReader br = new BufferedReader(new FileReader(origen))) {
             String linea;
             boolean seccionData = false;
@@ -50,17 +43,14 @@ public class Actividad6B {
             }
         } catch (IOException e) {
             System.err.println("Error crítico al leer el archivo: " + e.getMessage());
-            System.exit(1);
-        } catch (NumberFormatException e) {
-            System.err.println("Error: El índice de la columna y el número de hilos deben ser enteros.");
-            System.exit(1);
+            return;
         }
 
         System.out.println("==================================================");
         System.out.println("INICIANDO FILTRADO CON VIRTUAL THREADS (JAVA 21+)");
         System.out.println("==================================================");
         System.out.println("Filas totales a analizar: " + filasData.size());
-        System.out.println("Número de Virtual Threads invocados: " + numHilos);
+        System.out.println("Número de Virtual Threads invocados: " + numHilosVirtuales);
         System.out.println("Criterio: Columna [" + indiceColumna + "] == '" + valorBuscado + "'");
         System.out.println("--------------------------------------------------");
 
@@ -70,23 +60,18 @@ public class Actividad6B {
         List<Thread> hilosVirtuales = new ArrayList<>();
 
         int totalFilas = filasData.size();
-        int tamanoBloque = (int) Math.ceil((double) totalFilas / numHilos);
+        int tamanoBloque = (int) Math.ceil((double) totalFilas / numHilosVirtuales);
 
-        // 2. Particionado y creación de Virtual Threads
-        for (int i = 0; i < numHilos; i++) {
+        for (int i = 0; i < numHilosVirtuales; i++) {
             final int inicio = i * tamanoBloque;
             final int fin = Math.min(inicio + tamanoBloque, totalFilas);
 
-            if (inicio >= totalFilas) {
-                break;
-            }
+            if (inicio >= totalFilas) break;
 
-            // API de Java 21+: Thread.ofVirtual().start(...) en lugar de new Thread(...)
             Thread hiloVirtual = Thread.ofVirtual()
                     .name("vt-filter-worker-", i)
                     .start(() -> {
                         List<String> coincidenciasLocales = new ArrayList<>();
-
                         for (int j = inicio; j < fin; j++) {
                             String fila = filasData.get(j);
                             String[] valores = fila.split(",");
@@ -103,19 +88,16 @@ public class Actividad6B {
             hilosVirtuales.add(hiloVirtual);
         }
 
-        // 3. Sincronización: El método join() funciona exactamente igual que en hilos nativos
         for (Thread hilo : hilosVirtuales) {
             try {
                 hilo.join();
             } catch (InterruptedException e) {
-                System.err.println("Hilo virtual interrumpido: " + e.getMessage());
                 Thread.currentThread().interrupt();
             }
         }
 
         long tiempoFin = System.currentTimeMillis();
 
-        // 4. Informe de resultados
         System.out.println("¡Procesamiento con Virtual Threads finalizado!");
         System.out.println("Coincidencias encontradas: " + resultadosFiltrados.size());
         System.out.println("Tiempo total de ejecución: " + (tiempoFin - tiempoInicio) + " ms");
