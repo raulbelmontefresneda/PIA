@@ -15,15 +15,13 @@ import java.util.List;
 public class Actividad5 {
 
     public static void main(String[] args) {
-        if (args.length < 3) {
-            System.out.println("Error: Argumentos insuficientes.");
-            System.out.println("Uso: java pia.Actividad5 <archivo_origen> <archivo_destino> <indice_columna_a_eliminar>");
-            System.exit(1);
-        }
+        
+        // Configuración de parámetros locales
+        String origen = "diabetes.arff";
+        String destino = "diabetes_limpio.arff";
+        int columnaAEliminar = 0; // Elimina la primera columna (p.ej. 'preg' en diabetes.arff)
 
-        String origen = args[0];
-        String destino = args[1];
-        int columnaAEliminar = Integer.parseInt(args[2]);
+        System.out.printf("Iniciando purga de '%s'. Eliminando columna en índice [%d]...%n", origen, columnaAEliminar);
 
         System.out.printf("Iniciando purga. Eliminando columna en índice [%d]...%n", columnaAEliminar);
 
