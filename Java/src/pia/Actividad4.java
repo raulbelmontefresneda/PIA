@@ -13,13 +13,9 @@ import java.util.List;
 public class Actividad4 {
 
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.out.println("Error: Falta la ruta del archivo.");
-            System.out.println("Uso: java pia.Actividad4 <ruta_al_archivo_diabetes.arff>");
-            System.exit(1);
-        }
+        // Configuración de parámetros locales
+        String rutaArchivo = "diabetes.arff";
 
-        String rutaArchivo = args[0];
         List<String> atributos = new ArrayList<>();
         List<String> instancias = new ArrayList<>();
         String nombreRelacion = "";
